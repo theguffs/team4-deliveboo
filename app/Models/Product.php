@@ -14,7 +14,8 @@ class Product extends Model
         'price',
         'ingredients',
         'image',
-        'restaurant_id'
+        'visible',
+        'restaurant_id',
     ];
 //creata relazione CON la tabella ristoranti perché più prodotti sono presenti in un singolo ristorante
     public function restaurant(){
