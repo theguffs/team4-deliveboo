@@ -42,4 +42,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+//creata relazione CON tabella restaurants 1TO1
+    public function restaurant(){
+        return $this->hasOne(Restaurant::class);
+    }
 }
