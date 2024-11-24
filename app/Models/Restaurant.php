@@ -22,7 +22,7 @@ class Restaurant extends Model
     }
 //creata relazione CON tabella categories M to M perché più categorie possono essere assegnate a più ristoranti
     public function categories(){
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'restaurant_category');
     } 
 //creata relazione CON tabella products 1 to M perché più piatti o prodotti possono essere nello stesso ristorante
     public function products(){

@@ -15,6 +15,6 @@ class Category extends Model
     ];
 //relazione CON tabella ristoranti 1 To M perchè più categorie possono essere assegnate al singolo ristorante
     public function restaurants(){
-        return $this->belongsToMany(Restaurant::class);
+        return $this->belongsToMany(Restaurant::class, 'restaurant_category');
     } 
 }
