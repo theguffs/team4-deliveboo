@@ -5,138 +5,110 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Mostra gli ordini ricevuti dal ristorante autenticato, ordinati per data.
      */
-    public function index()
+     public function index(Request $request)
     {
-        $orders = Order::with('products')->get();
+        // Verifica che l'utente abbia un ristorante associato
+        $restaurant = Auth::user()->restaurant;
+        if (!$restaurant) {
+            return redirect()->route('home')->with('error', 'Devi prima registrare un ristorante!');
+        }
+
+        // Ottieni gli ordini del ristorante autenticato, ordinati per data decrescente
+        $orders = Order::where('restaurant_id', $restaurant->id)
+                        ->with('products') // Ottieni i prodotti associati all'ordine
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+
+        // Se la richiesta è di tipo JSON, ritorna i dati in formato JSON
+        if ($request->wantsJson()) {
+            return response()->json($orders);
+        }
+
+        // Altrimenti, restituisci la vista con gli ordini
         return view('orders.index', compact('orders'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the specified resource.
+     * Mostra i dettagli di un ordine specifico.
+     * Risponde anche con JSON se la richiesta è un'API.
      */
-    public function create()
+    public function show($id, Request $request)
     {
-        $products = Product::all();
-        return view('orders.create', compact('products'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        // Validazione della richiesta
-        $request->validate([
-            'email' => 'required|email',
-            'phone' => 'required|max:15',
-            'address' => 'required|max:100',
-            'notes' => 'nullable|string',
-            'price' => 'required|decimal:2,2',
-            'customer' => 'nullable|string|max:100',
-            'products' => 'required|array', 
-            'products.*.id' => 'required|exists:products,id', 
-            'products.*.quantity' => 'required|integer|min:1',
-        ]);
-
-        // Crea l'ordine
-        $order = Order::create([
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'notes' => $request->notes,
-            'price' => $request->price,
-            'customer' => $request->customer,
-        ]);
-
-        
-        foreach ($request->products as $product) {
-            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
+        // Verifica che l'utente ristoratore possa vedere solo gli ordini del suo ristorante
+        $restaurant = Auth::user()->restaurant;
+        if (!$restaurant) {
+            return redirect()->route('home')->with('error', 'Devi prima registrare un ristorante!');
         }
 
-        
-        return redirect()->route('orders.index');
-    }
+        // Ottieni l'ordine specifico del ristorante autenticato
+        $order = Order::where('id', $id)
+                      ->where('restaurant_id', $restaurant->id) // Filtra gli ordini per il ristorante dell'utente
+                      ->with('products') // Ottieni i prodotti associati all'ordine
+                      ->firstOrFail();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-       
-        $order = Order::with('products')->findOrFail($id);
+        // Se la richiesta è di tipo JSON, ritorna i dati in formato JSON
+        if ($request->wantsJson()) {
+            return response()->json($order);
+        }
+
+        // Altrimenti, restituisci la vista con i dettagli dell'ordine
         return view('orders.show', compact('order'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for creating a new resource.
+     * Questa funzione può essere utilizzata per la creazione di ordini,
+     * ma dal punto di vista del ristoratore non è necessaria, poiché solo l'utente cliente può fare ordini.
      */
-    public function edit(string $id)
+    public function create()
     {
-        $order = Order::findOrFail($id);
-        $products = Product::all(); // Recupera tutti i prodotti disponibili
-        return view('orders.edit', compact('order', 'products'));
+        // L'utente ristoratore non deve poter creare ordini, quindi può essere lasciato vuoto.
+        return redirect()->route('orders.index');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     * Poiché solo l'utente cliente può fare ordini, questo metodo non è necessario per i ristoratori.
+     */
+    public function store(Request $request)
+    {
+        return redirect()->route('orders.index');
+    }
+
+
+    /**
+     * Show the form for editing the specified resource.
+     * Anche questa funzione non è necessaria per il ristoratore, poiché gli ordini non sono modificabili dai ristoratori.
+     */
+    public function edit($id)
+    {
+        return redirect()->route('orders.index');
     }
 
     /**
      * Update the specified resource in storage.
+     * Gli ordini non devono essere aggiornati dai ristoratori, quindi questa funzione non è necessaria.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-       
-        $order = Order::findOrFail($id);
-
-        
-        $request->validate([
-            'email' => 'required|email',
-            'phone' => 'required|max:15',
-            'address' => 'required|max:100',
-            'notes' => 'nullable|string',
-            'price' => 'required|decimal:2,2',
-            'customer' => 'nullable|string|max:100',
-            'products' => 'required|array', // Assicurati che venga passato un array di prodotti
-            'products.*.id' => 'required|exists:products,id', // Verifica che ogni prodotto esista nel DB
-            'products.*.quantity' => 'required|integer|min:1', // Quantità dei prodotti
-        ]);
-
-       
-        $order->update([
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'notes' => $request->notes,
-            'price' => $request->price,
-            'customer' => $request->customer,
-        ]);
-
-       
-        $order->products()->detach();
-
-        
-        foreach ($request->products as $product) {
-            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
-        }
-
-        
-        return redirect()->route('orders.show', $order->id);
+        return redirect()->route('orders.index');
     }
 
     /**
      * Remove the specified resource from storage.
+     * Poiché gli ordini non possono essere eliminati dai ristoratori, questa funzione non è necessaria.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        
-        $order = Order::findOrFail($id);
-        $order->delete();
-
-       
         return redirect()->route('orders.index');
     }
 }

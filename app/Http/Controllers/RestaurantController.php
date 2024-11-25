@@ -51,15 +51,12 @@ class RestaurantController extends Controller
             $image = null;
         }
 
-        //ristorante associato all'utente dell'accesso attuale
-        $restaurant = Auth::user()->restaurant;
-
-        $restaurant = Restaurant::create([
+        $restaurant = Auth::user()->restaurant()->create([
             'name' => $request->name,
             'address' => $request->address,
             'description' => $request->description,
             'piva' => $request->piva,
-            'image' => $request->image,
+            'image' => $image,
         ]);
         $restaurant->categories()->sync($request->categories);
 

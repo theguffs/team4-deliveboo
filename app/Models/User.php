@@ -44,6 +44,6 @@ class User extends Authenticatable
     ];
 //creata relazione CON tabella restaurants 1TO1
     public function restaurant(){
-        return $this->hasOne(Restaurant::class);
+         return $this->hasOne(Restaurant::class);
     }
 }
