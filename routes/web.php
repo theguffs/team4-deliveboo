@@ -1,31 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RestaurantController;
 
-// Controllers
-use App\Http\Controllers\MainController;
-use App\Http\Controllers\Admin\MainController as AdminMainController;
+Route::get('/', [RestaurantController::class, 'index'])->name('home');  // Homepage che mostra i ristoranti
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-Route::get('/', [MainController::class, 'index'])->name('home');
-
-Route::prefix('admin')
-    ->name('admin.')
-    ->middleware('auth')
-    ->group(function () {
-
-    Route::get('/dashboard', [AdminMainController::class, 'dashboard'])->name('dashboard');
-
-});
-
-require __DIR__.'/auth.php';
+Route::get('restaurants', [RestaurantController::class, 'index'])->name('restaurants.index'); // Vedi tutti i ristoranti (pubblico)
+Route::get('restaurant/{restaurant}', [RestaurantController::class, 'show'])->name('restaurant.show'); // Vedi un singolo ristorante
