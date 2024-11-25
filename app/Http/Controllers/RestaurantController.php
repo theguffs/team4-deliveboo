@@ -17,7 +17,7 @@ class RestaurantController extends Controller
     {
         //mostra solo i ristoranti dell'utente autenticato
         $restaurants = Restaurant::where('user_id', Auth::id())->get();
-        return view('restaurants.index', compact('restaurants'));
+        return response()->json($restaurants);
     }
 
     /**
@@ -71,8 +71,8 @@ class RestaurantController extends Controller
      */
     public function show(string $id)
     {
-        $restaurant = Restaurant::findOrFail($id);
-       return view('restaurants.show',compact('restaurant'));
+        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        return view('restaurants.show',compact('restaurant'));
     }
 
     /**
@@ -80,7 +80,7 @@ class RestaurantController extends Controller
      */
     public function edit(string $id)
     {
-        $restaurant = Restaurant::findOrFail($id);
+        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         return view('restaurants.edit', compact('restaurant'));
     }
 
@@ -98,7 +98,7 @@ class RestaurantController extends Controller
             'image' => 'nullable|image',
             'categories' => 'required|array'
         ]);
-        $restaurant = Restaurant::findOrFail($id);
+        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
         //controllo per gestire l'aggionamento delle immagini
         if ($request->hasFile('image')) {
@@ -126,7 +126,7 @@ class RestaurantController extends Controller
      */
     public function destroy(string $id)
     {
-        $restaurant = Restaurant::findOrFail($id);
+        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         $restaurant->delete();
         return redirect()->route('restaurants.index');
     }
