@@ -25,7 +25,7 @@ class RestaurantController extends Controller
             }
         } else {
             // Utente non autenticato: mostra tutti i ristoranti, con la possibilità di filtrare per categoria
-            $query = Restaurant::with('categories');
+            $query = Restaurant::with('categories', 'products');
 
             // Se viene passato un parametro 'category', filtra i ristoranti per quella categoria
             if ($request->has('category')) {
