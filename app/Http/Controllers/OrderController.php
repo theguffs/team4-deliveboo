@@ -3,17 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    public function __construct()
+    {
+        // Assicurati che l'utente sia autenticato per ogni azione in questo controller
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      * Mostra gli ordini ricevuti dal ristorante autenticato, ordinati per data.
      */
-     public function index(Request $request)
+    public function index(Request $request)
     {
         // Verifica che l'utente abbia un ristorante associato
         $restaurant = Auth::user()->restaurant;
@@ -71,7 +76,7 @@ class OrderController extends Controller
      */
     public function create()
     {
-        // L'utente ristoratore non deve poter creare ordini, quindi può essere lasciato vuoto.
+        // L'utente ristoratore non deve poter creare ordini
         return redirect()->route('orders.index');
     }
 
@@ -81,9 +86,9 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
+        // Solo i clienti possono fare ordini, quindi reindirizza
         return redirect()->route('orders.index');
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -91,6 +96,7 @@ class OrderController extends Controller
      */
     public function edit($id)
     {
+        // L'utente ristoratore non può modificare gli ordini, quindi reindirizza
         return redirect()->route('orders.index');
     }
 
@@ -100,6 +106,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // L'utente ristoratore non può aggiornare gli ordini, quindi reindirizza
         return redirect()->route('orders.index');
     }
 
@@ -109,6 +116,7 @@ class OrderController extends Controller
      */
     public function destroy($id)
     {
+        // L'utente ristoratore non può eliminare gli ordini, quindi reindirizza
         return redirect()->route('orders.index');
     }
 }

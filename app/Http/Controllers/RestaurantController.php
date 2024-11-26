@@ -3,53 +3,81 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-//importo il model di Restaurant
 use App\Models\Restaurant;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
-
 
 class RestaurantController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Mostra i ristoranti
+    public function index(Request $request)
     {
-        //mostra solo i ristoranti dell'utente autenticato
-        $restaurants = Restaurant::where('user_id', Auth::id())->get();
-        return response()->json($restaurants);
+        if (Auth::check()) {
+            // Utente autenticato: mostra solo il ristorante associato, incluse categorie e prodotti
+            $restaurant = Restaurant::where('user_id', Auth::id())
+                ->with('categories', 'products') // Aggiungi altre relazioni necessarie
+                ->first();
+
+            if ($restaurant) {
+                return response()->json($restaurant);
+            } else {
+                return response()->json(['message' => 'Nessun ristorante associato a questo utente'], 404);
+            }
+        } else {
+            // Utente non autenticato: mostra tutti i ristoranti, con la possibilitÃ  di filtrare per categoria
+            $query = Restaurant::with('categories');
+
+            // Se viene passato un parametro 'category', filtra i ristoranti per quella categoria
+            if ($request->has('category')) {
+                $categoryName = $request->category;
+
+                // Trova la categoria con quel nome
+                $category = Category::where('name', $categoryName)->first();
+
+                if ($category) {
+                    // Restituisce solo i ristoranti che appartengono alla categoria selezionata
+                    $restaurants = $category->restaurants()->with('categories')->get();
+                } else {
+                    $restaurants = collect(); // Se la categoria non esiste, restituisce una lista vuota
+                }
+            } else {
+                // Se non viene specificata una categoria, mostra tutti i ristoranti
+                $restaurants = $query->get();
+            }
+
+            return response()->json($restaurants);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Mostra un ristorante specifico
+    public function show(string $id)
     {
-        return view('restaurants.create');
+        $query = Restaurant::where('id', $id)->with('categories');
+
+        if (Auth::check()) {
+            // Utente autenticato: limita al ristorante dell'utente
+            $query->where('user_id', Auth::id());
+        }
+
+        $restaurant = $query->firstOrFail();
+        return response()->json($restaurant);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Crea un ristorante (solo per utenti autenticati)
     public function store(Request $request)
     {
-        //validazione dati 
+        $this->authorize('create', Restaurant::class);
+
         $request->validate([
             'name' => 'required|string|max:100',
             'address' => 'required|string|max:100',
             'description' => 'nullable|string',
-            'piva' => 'required|string|size:11|unique',
+            'piva' => 'required|string|size:11|unique:restaurants',
             'image' => 'nullable|image',
-            'categories' => 'required|array' //controlla se effettivasmente dia un array
+            'categories' => 'required|array|exists:categories,id',
         ]);
 
-        if ($request->hasFile('image')) {
-            //se esiste un file immagine caricato dall'utente lo salva in public
-            $image = $request->file('image')->store('images', 'public');
-        } else {
-            //altrimenti  il campo è null e evita problemi con il DB
-            $image = null;
-        }
+        $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
 
         $restaurant = Auth::user()->restaurant()->create([
             'name' => $request->name,
@@ -58,73 +86,54 @@ class RestaurantController extends Controller
             'piva' => $request->piva,
             'image' => $image,
         ]);
+
         $restaurant->categories()->sync($request->categories);
 
-        return redirect()->route('restaurants.index');
+        return response()->json([
+            'message' => 'Ristorante creato con successo',
+            'restaurant' => $restaurant->load('categories'),
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
-        return view('restaurants.show',compact('restaurant'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
-        return view('restaurants.edit', compact('restaurant'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // Modifica un ristorante (solo per utenti autenticati)
     public function update(Request $request, string $id)
     {
-        //validazione dati 
+        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
         $request->validate([
             'name' => 'required|string|max:100',
             'address' => 'required|string|max:100',
-            'description' => 'nullable|text',
-            'piva' => 'required|string|size:11|unique',
+            'description' => 'nullable|string',
+            'piva' => 'required|string|size:11|unique:restaurants,piva,' . $restaurant->id,
             'image' => 'nullable|image',
-            'categories' => 'required|array'
+            'categories' => 'required|array|exists:categories,id',
         ]);
-        $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
-        //controllo per gestire l'aggionamento delle immagini
-        if ($request->hasFile('image')) {
-            // se esiste un file immagine caricato dall'utente lo salva in public
-            $image = $request->file('image')->store('images', 'public');
-        } else {
-        // altrimenti mantiene l'immagine vecchia
-            $image = $restaurant->image;
-        }
-        
+        $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : $restaurant->image;
+
         $restaurant->update([
-            'name'=> $request->name,
+            'name' => $request->name,
             'address' => $request->address,
             'description' => $request->description,
-            'piva'=> $request->piva,
-            'image'=>$request->image
+            'piva' => $request->piva,
+            'image' => $image,
         ]);
+
         $restaurant->categories()->sync($request->categories);
 
-        return redirect()->route('restaurants.index');
+        return response()->json([
+            'message' => 'Ristorante aggiornato con successo',
+            'restaurant' => $restaurant->load('categories'),
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Elimina un ristorante (solo per utenti autenticati)
     public function destroy(string $id)
     {
         $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         $restaurant->delete();
-        return redirect()->route('restaurants.index');
+
+        return response()->json(['message' => 'Ristorante eliminato con successo']);
     }
 }
+
