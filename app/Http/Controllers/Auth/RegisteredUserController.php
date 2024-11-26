@@ -1,3 +1,4 @@
+<?php
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -35,8 +36,8 @@ class RegisteredUserController extends Controller
         // Login utente
         Auth::login($user);
 
-        // Crea il ristorante direttamente nel controller del ristorante
-        $restaurantController->store($request, $user);
+        // Crea il ristorante usando il controller RestaurantController
+        $restaurantController->store($request); // Passa solo $request al metodo store nel RestaurantController
 
         return response()->json(['message' => 'Utente e ristorante creati con successo'], 201);
     }

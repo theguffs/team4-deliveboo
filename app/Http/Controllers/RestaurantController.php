@@ -82,7 +82,7 @@ class RestaurantController extends Controller
         'categories' => 'required|array|exists:categories,id',
     ]);
 
-    // Gestione immagine opzionale
+    // Gestione immagine
     $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
 
     // Crea il ristorante e associa i dati
