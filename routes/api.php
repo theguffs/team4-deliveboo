@@ -5,16 +5,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Auth\RegisteredUserController; // Assicurati di importare il controller corretto
 
 /*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Qui registriamo le rotte API per l'applicazione.
-| Queste rotte sono caricate dal RouteServiceProvider e saranno assegnate
-| al gruppo middleware "api".
-|
+|-------------------------------------------------------------------------- 
+| API Routes 
+|-------------------------------------------------------------------------- 
+| 
+| Qui registriamo le rotte API per l'applicazione. 
+| Queste rotte sono caricate dal RouteServiceProvider e saranno assegnate 
+| al gruppo middleware "api". 
+| 
 */
 
 /* Rotte accessibili a tutti (utenti autenticati e non) */
@@ -25,6 +26,12 @@ Route::prefix('public')->group(function () {
 
     // Visualizzare i piatti di un ristorante
     Route::get('restaurant/{restaurant}/products', [ProductController::class, 'index'])->name('products.index'); // Vedi i prodotti di un ristorante
+});
+
+/* Rotte di autenticazione (per utenti non autenticati) */
+Route::prefix('auth')->group(function () {
+    Route::post('register', [RegisteredUserController::class, 'store'])->name('auth.register'); // Registrazione dell'utente e creazione ristorante
+    // Aggiungi altre rotte di autenticazione se necessarie (login, password reset, ecc.)
 });
 
 /* Rotte per utenti autenticati (ristoratori) */
