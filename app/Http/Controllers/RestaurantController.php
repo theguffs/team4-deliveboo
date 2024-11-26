@@ -52,7 +52,7 @@ class RestaurantController extends Controller
     // Mostra un ristorante specifico
     public function show(string $id)
     {
-        $query = Restaurant::where('id', $id)->with('categories');
+        $query = Restaurant::where('id', $id)->with('categories', 'products');
 
         if (Auth::check()) {
             // Utente autenticato: limita al ristorante dell'utente
