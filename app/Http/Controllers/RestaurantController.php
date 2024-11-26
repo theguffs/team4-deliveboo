@@ -24,7 +24,7 @@ class RestaurantController extends Controller
                 return response()->json(['message' => 'Nessun ristorante associato a questo utente'], 404);
             }
         } else {
-            // Utente non autenticato: mostra tutti i ristoranti, con la possibilitÃ  di filtrare per categoria
+            // Utente non autenticato: mostra tutti i ristoranti, con la possibilità di filtrare per categoria
             $query = Restaurant::with('categories');
 
             // Se viene passato un parametro 'category', filtra i ristoranti per quella categoria
@@ -65,41 +65,52 @@ class RestaurantController extends Controller
 
     // Crea un ristorante (solo per utenti autenticati)
     public function store(Request $request)
-    {
-        $this->authorize('create', Restaurant::class);
-
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'address' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'piva' => 'required|string|size:11|unique:restaurants',
-            'image' => 'nullable|image',
-            'categories' => 'required|array|exists:categories,id',
-        ]);
-
-        $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
-
-        $restaurant = Auth::user()->restaurant()->create([
-            'name' => $request->name,
-            'address' => $request->address,
-            'description' => $request->description,
-            'piva' => $request->piva,
-            'image' => $image,
-        ]);
-
-        $restaurant->categories()->sync($request->categories);
-
-        return response()->json([
-            'message' => 'Ristorante creato con successo',
-            'restaurant' => $restaurant->load('categories'),
-        ], 201);
+{
+    // Verifica se l'utente ha già un ristorante
+    if (Auth::user()->restaurant) {
+        return response()->json(['message' => 'Hai già un ristorante. Non puoi crearne più di uno.'], 400);
     }
+
+    $this->authorize('create', Restaurant::class);
+
+    $request->validate([
+        'name' => 'required|string|max:100',
+        'address' => 'required|string|max:100',
+        'description' => 'nullable|string',
+        'piva' => 'required|string|size:11|unique:restaurants',
+        'image' => 'nullable|image',
+        'categories' => 'required|array|exists:categories,id',
+    ]);
+
+    // Gestione immagine opzionale
+    $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
+
+    // Crea il ristorante e associa i dati
+    $restaurant = Auth::user()->restaurant()->create([
+        'name' => $request->name,
+        'address' => $request->address,
+        'description' => $request->description,
+        'piva' => $request->piva,
+        'image' => $image,
+    ]);
+
+    // Sincronizza le categorie selezionate
+    $restaurant->categories()->sync($request->categories);
+
+    // Risposta di successo
+    return response()->json([
+        'message' => 'Ristorante creato con successo',
+        'restaurant' => $restaurant->load('categories'),
+    ], 201);
+}
+
 
     // Modifica un ristorante (solo per utenti autenticati)
     public function update(Request $request, string $id)
     {
         $restaurant = Restaurant::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
 
+        // Validazione dei dati
         $request->validate([
             'name' => 'required|string|max:100',
             'address' => 'required|string|max:100',
@@ -109,8 +120,10 @@ class RestaurantController extends Controller
             'categories' => 'required|array|exists:categories,id',
         ]);
 
+        // Gestione dell'immagine, se presente
         $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : $restaurant->image;
 
+        // Aggiornamento delle informazioni del ristorante
         $restaurant->update([
             'name' => $request->name,
             'address' => $request->address,
@@ -119,8 +132,10 @@ class RestaurantController extends Controller
             'image' => $image,
         ]);
 
+        // Sincronizza le categorie selezionate
         $restaurant->categories()->sync($request->categories);
 
+        // Risposta di successo
         return response()->json([
             'message' => 'Ristorante aggiornato con successo',
             'restaurant' => $restaurant->load('categories'),
@@ -136,4 +151,3 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Ristorante eliminato con successo']);
     }
 }
-
