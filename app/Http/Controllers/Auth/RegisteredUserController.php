@@ -2,15 +2,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\RestaurantController; // Importa il controller
 use App\Models\User;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class RegisteredUserController extends Controller
 {
-    public function store(Request $request, RestaurantController $restaurantController)
+    public function store(Request $request)
     {
         // Validazione dei dati (utente e ristorante)
         $request->validate([
@@ -36,9 +37,28 @@ class RegisteredUserController extends Controller
         // Login utente
         Auth::login($user);
 
-        // Crea il ristorante usando il controller RestaurantController
-        $restaurantController->store($request); // Passa solo $request al metodo store nel RestaurantController
+        // Gestione immagine (se presente)
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            // Salva l'immagine nella cartella 'restaurants' dentro 'storage/app'
+            $imagePath = $request->file('image')->store('restaurants', 'public');
+        }
 
-        return response()->json(['message' => 'Utente e ristorante creati con successo'], 201);
+        // Crea il ristorante legato all'utente
+        $restaurant = Restaurant::create([
+            'user_id' => $user->id,  // Associa il ristorante all'utente
+            'restaurant_name' => $request->restaurant_name,
+            'address' => $request->address,
+            'description' => $request->description,
+            'piva' => $request->piva,
+            'image' => $imagePath, // Salva il percorso dell'immagine
+        ]);
+
+        // Restituisci una risposta di successo con i dati utente e ristorante
+        return response()->json([
+            'message' => 'Utente e ristorante creati con successo',
+            'user' => $user,
+            'restaurant' => $restaurant
+        ], 201);
     }
 }
