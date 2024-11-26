@@ -1,9 +1,35 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RestaurantController;
 
-Route::get('/', [RestaurantController::class, 'index'])->name('home');  // Homepage che mostra i ristoranti
+// Controllers
+use App\Http\Controllers\MainController;
+use App\Http\Controllers\Admin\MainController as AdminMainController;
 
-Route::get('restaurants', [RestaurantController::class, 'index'])->name('restaurants.index'); // Vedi tutti i ristoranti (pubblico)
-Route::get('restaurant/{restaurant}', [RestaurantController::class, 'show'])->name('restaurant.show'); // Vedi un singolo ristorante
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Qui registriamo le rotte web per l'applicazione. Le rotte pubbliche
+| sono accessibili a tutti, mentre le rotte admin sono protette dal middleware.
+|
+*/
+
+// Rotte pubbliche
+Route::get('/', [MainController::class, 'index'])->name('home');
+
+// Rotte protette per l'amministrazione
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware('auth')
+    ->group(function () {
+
+        // Dashboard amministrativa
+        Route::get('/dashboard', [AdminMainController::class, 'dashboard'])->name('dashboard');
+
+        // Aggiungere qui eventuali altre rotte amministrative
+    });
+
+// Autenticazione (login, registrazione, ecc.)
+require __DIR__.'/auth.php';
