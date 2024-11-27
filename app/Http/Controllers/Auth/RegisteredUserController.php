@@ -20,11 +20,13 @@ class RegisteredUserController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             // Dati ristorante
-            'restaurant_name' => 'required|string|max:100',
+            'name' => 'required|string|max:100',
             'address' => 'required|string|max:100',
             'description' => 'nullable|string',
             'piva' => 'required|string|size:11|unique:restaurants,piva',
             'image' => 'nullable|image|max:1024',
+            'categories' => 'required|array',
+            'categories.*' => 'exists:categories,id'
         ]);
 
         // Crea l'utente
@@ -47,12 +49,17 @@ class RegisteredUserController extends Controller
         // Crea il ristorante legato all'utente
         $restaurant = Restaurant::create([
             'user_id' => $user->id,  // Associa il ristorante all'utente
-            'restaurant_name' => $request->restaurant_name,
+            'name' => $request->name,
             'address' => $request->address,
             'description' => $request->description,
             'piva' => $request->piva,
             'image' => $imagePath, // Salva il percorso dell'immagine
         ]);
+
+        // Associa le categorie al ristorante
+        if ($request->has('categories')) {
+            $restaurant->categories()->attach($request->categories);
+        }
 
         // Restituisci una risposta di successo con i dati utente e ristorante
         return response()->json([

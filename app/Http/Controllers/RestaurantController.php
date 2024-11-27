@@ -83,7 +83,8 @@ class RestaurantController extends Controller
         'description' => 'nullable|string',
         'piva' => 'required|string|size:11|unique:restaurants',
         'image' => 'nullable|image',
-        'categories' => 'required|array|exists:categories,id',
+        'categories' => 'required|array',
+        'categories.*' => 'exists:categories,id'
     ]);
 
     // Gestione immagine
@@ -91,7 +92,7 @@ class RestaurantController extends Controller
 
     // Crea il ristorante e associa i dati
     $restaurant = Auth::user()->restaurant()->create([
-        'name' => $request->restaurant_name,
+        'name' => $request->name,
         'address' => $request->address,
         'description' => $request->description,
         'piva' => $request->piva,
@@ -99,8 +100,11 @@ class RestaurantController extends Controller
         'image' => $request->file('image') ? $request->file('image')->store('restaurants', 'public') : null, 
     ]);
 
-    // Sincronizza le categorie selezionate
-    $restaurant->categories()->sync($request->categories);
+    
+    // Associa le categorie al ristorante
+    if ($request->has('categories')) {
+        $restaurant->categories()->attach($request->categories);
+    }
 
     // Risposta di successo
     return response()->json([
