@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class RestaurantController extends Controller
 {
+    public function getCategories(){$categories=Category::all();
+        return response()->json($categories);
+    }
     // Mostra i ristoranti
     public function index(Request $request)
     {

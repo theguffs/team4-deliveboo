@@ -23,9 +23,11 @@ Route::prefix('public')->group(function () {
     // Visualizzare ristoranti
     Route::get('restaurants', [RestaurantController::class, 'index'])->name('restaurants.index'); // Vedi tutti i ristoranti
     Route::get('restaurant/{restaurant}', [RestaurantController::class, 'show'])->name('restaurant.show'); // Vedi un singolo ristorante
+    Route::get('/restaurant-categories', [RestaurantController::class, 'getCategories']);
 
     // Visualizzare i piatti di un ristorante
     Route::get('restaurant/{restaurant}/products', [ProductController::class, 'index'])->name('products.index'); // Vedi i prodotti di un ristorante
+    
 });
 
 /* Rotte di autenticazione (per utenti non autenticati) */
