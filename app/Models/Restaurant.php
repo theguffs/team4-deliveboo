@@ -10,11 +10,12 @@ class Restaurant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'price',
-        'ingredients',
+        'restaurant_name',
+        'address',
+        'description',
+        'piva',
         'image',
-        'restaurant_id'
+        'user_id'
     ];
 //creata relazione CON tabella users 1TO1 perché UN ristoratore possiende UN ristorante
     public function user(){

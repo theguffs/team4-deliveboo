@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class RestaurantController extends Controller
 {
@@ -90,11 +91,12 @@ class RestaurantController extends Controller
 
     // Crea il ristorante e associa i dati
     $restaurant = Auth::user()->restaurant()->create([
-        'name' => $request->name,
+        'name' => $request->restaurant_name,
         'address' => $request->address,
         'description' => $request->description,
         'piva' => $request->piva,
-        'image' => $image,
+        // Gestione dell'immagine
+        'image' => $request->file('image') ? $request->file('image')->store('restaurants', 'public') : null, 
     ]);
 
     // Sincronizza le categorie selezionate
