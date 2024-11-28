@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Category;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,6 +12,12 @@ use Illuminate\Support\Facades\Storage;
 
 class RegisteredUserController extends Controller
 {
+    public function create()
+    {
+        $categories = Category::all();
+        return view('auth.register', compact('categories'));
+    }
+
     public function store(Request $request)
     {
         // Validazione dei dati (utente e ristorante)
@@ -61,11 +68,7 @@ class RegisteredUserController extends Controller
             $restaurant->categories()->attach($request->categories);
         }
 
-        // Restituisci una risposta di successo con i dati utente e ristorante
-        return response()->json([
-            'message' => 'Utente e ristorante creati con successo',
-            'user' => $user,
-            'restaurant' => $restaurant
-        ], 201);
+        // Reindirizza alla dashboard
+        return redirect()->route('admin.dashboard')->with('success', 'Utente e ristorante creati con successo');
     }
 }
