@@ -30,16 +30,13 @@ Route::post('login', [AuthenticatedSessionController::class, 'store']); // Effet
 
 // Rotte protette per l'amministrazione
 Route::prefix('admin')
+    ->middleware(['auth'])
     ->name('admin.')
-    ->middleware('auth') // Protegge tutte le rotte sottostanti, solo gli utenti autenticati possono accedervi
     ->group(function () {
-
         // Dashboard amministrativa
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
-        })->middleware(['auth'])->name('dashboard');
-
-        // Aggiungere qui eventuali altre rotte amministrative (gestione ristoranti, piatti, ecc.)
+        })->name('dashboard');
     });
 
 // Autenticazione (gestito automaticamente da Laravel)
