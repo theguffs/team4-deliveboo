@@ -16,40 +16,21 @@ class RestaurantController extends Controller
     // Mostra i ristoranti
     public function index(Request $request)
     {
+        // Se è una richiesta API, restituisci il JSON dei ristoranti
+        if ($request->wantsJson()) {
+            $restaurants = Restaurant::with('categories', 'products')->get();
+            return response()->json($restaurants);
+        }
+
+        // Se è una richiesta HTML (es. navigazione della dashboard), mostra la vista
         if (Auth::check()) {
-            // Utente autenticato: mostra solo il ristorante associato, incluse categorie e prodotti
             $restaurant = Restaurant::where('user_id', Auth::id())
-                ->with('categories', 'products') // Aggiungi altre relazioni necessarie
+                ->with('categories', 'products')
                 ->first();
 
-            if ($restaurant) {
-                return response()->json($restaurant);
-            } else {
-                return response()->json(['message' => 'Nessun ristorante associato a questo utente'], 404);
-            }
+            return view('admin.dashboard', compact('restaurant'));
         } else {
-            // Utente non autenticato: mostra tutti i ristoranti, con la possibilità di filtrare per categoria
-            $query = Restaurant::with('categories', 'products');
-
-            // Se viene passato un parametro 'category', filtra i ristoranti per quella categoria
-            if ($request->has('category')) {
-                $categoryName = $request->category;
-
-                // Trova la categoria con quel nome
-                $category = Category::where('name', $categoryName)->first();
-
-                if ($category) {
-                    // Restituisce solo i ristoranti che appartengono alla categoria selezionata
-                    $restaurants = $category->restaurants()->with('categories')->get();
-                } else {
-                    $restaurants = collect(); // Se la categoria non esiste, restituisce una lista vuota
-                }
-            } else {
-                // Se non viene specificata una categoria, mostra tutti i ristoranti
-                $restaurants = $query->get();
-            }
-
-            return response()->json($restaurants);
+            return redirect()->route('login')->with('error', 'Devi essere autenticato per accedere alla dashboard');
         }
     }
 

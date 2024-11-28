@@ -18,43 +18,16 @@ class ProductController extends Controller
     /**
      * Mostra un elenco dei prodotti.
      */
-    public function index(Request $request)
+    public function index()
     {
-        if (Auth::check()) {
-            // Se l'utente è autenticato, ottieni i prodotti associati al suo ristorante
-            $restaurant = Auth::user()->restaurant;
+        // Recupera il ristorante dell'utente autenticato
+        $restaurant = Auth::user()->restaurant;
 
-            if (!$restaurant) {
-                return response()->json(['error' => 'Devi prima registrare un ristorante!'], 403);
-            }
+        // Recupera i prodotti del ristorante se il ristorante esiste
+        $products = $restaurant ? $restaurant->products : collect();
 
-            // Ottieni i prodotti del ristorante dell'utente e le relative categorie
-            $products = $restaurant->products()->with('categories')->get();
-        } else {
-            // Se l'utente non è autenticato, ottieni tutti i prodotti
-            $query = Product::with('categories');
-
-            // Se viene passato un parametro di categoria, filtra i prodotti per quella categoria
-            if ($request->has('category')) {
-                $categoryName = $request->category;
-
-                // Trova la categoria con il nome passato
-                $category = Category::where('name', $categoryName)->first();
-
-                if ($category) {
-                    // Restituisce solo i prodotti appartenenti alla categoria selezionata
-                    $products = $category->products()->with('categories')->get();
-                } else {
-                    // Se la categoria non esiste, restituisce una lista vuota
-                    $products = collect();
-                }
-            } else {
-                // Se non viene specificata una categoria, mostra tutti i prodotti
-                $products = $query->get();
-            }
-        }
-
-        return response()->json($products);
+        // Passa i prodotti alla vista dashboard
+        return view('admin.dashboard', compact('products'));
     }
 
     /**
@@ -69,7 +42,7 @@ class ProductController extends Controller
         // Carica le categorie per il form di creazione del prodotto
         $categories = Category::all();
 
-        return view('products.create', compact('categories'));
+        return view('products.create');
     }
 
     /**
@@ -83,7 +56,6 @@ class ProductController extends Controller
             'ingredients' => 'nullable|max:1000',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:1024',
-            'categories' => 'required|array|exists:categories,id',
         ]);
 
         $restaurant = Auth::user()->restaurant;
@@ -105,9 +77,7 @@ class ProductController extends Controller
             'image' => $image,
         ]);
 
-        // Associa il prodotto alle categorie selezionate
-        $product->categories()->sync($request->categories);
-
+        return redirect()->route('admin.dashboard')->with('success', 'Prodotto creato con successo!');
         return response()->json($product, 201);
     }
 
@@ -116,12 +86,11 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        // Ottieni il prodotto richiesto insieme alle sue categorie
-        $product = Product::with('categories')
-            ->where('id', $id)
-            ->firstOrFail();
+        // Ottieni il prodotto richiesto che appartiene al ristorante dell'utente
+        $product = $this->getUserProduct($id);
 
-        return response()->json($product);
+        // Passa il prodotto alla vista
+        return view('products.show', compact('product'));
     }
 
     /**
@@ -132,10 +101,8 @@ class ProductController extends Controller
         // Ottieni il prodotto da modificare che appartiene al ristorante dell'utente
         $product = $this->getUserProduct($id);
 
-        // Carica tutte le categorie per il form di modifica del prodotto
-        $categories = Category::all();
-
-        return view('products.edit', compact('product', 'categories'));
+        // Passa il prodotto alla vista di modifica
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -149,7 +116,6 @@ class ProductController extends Controller
             'ingredients' => 'nullable|max:1000',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:1024',
-            'categories' => 'required|array|exists:categories,id',
         ]);
 
         // Ottieni il prodotto da aggiornare che appartiene al ristorante dell'utente
@@ -168,10 +134,8 @@ class ProductController extends Controller
             'image' => $image,
         ]);
 
-        // Associa le categorie selezionate al prodotto
-        $product->categories()->sync($request->categories);
-
-        return response()->json($product);
+        // Reindirizza alla dashboard con un messaggio di successo
+        return redirect()->route('admin.dashboard')->with('success', 'Prodotto aggiornato con successo!');
     }
 
     /**
@@ -183,7 +147,18 @@ class ProductController extends Controller
         $product = $this->getUserProduct($id);
         $product->delete();
 
-        return response()->json(['message' => 'Prodotto eliminato con successo'], 204);
+        return redirect()->route('admin.dashboard')->with('success', 'Prodotto cancellato con successo!');
+    }
+
+    public function toggleVisibility($id)
+    {
+        $product = $this->getUserProduct($id); // Usa il metodo esistente per ottenere il prodotto dell'utente autenticato
+
+        // Alterna lo stato di visibilità del prodotto
+        $product->visible = !$product->visible;
+        $product->save();
+
+        return redirect()->route('admin.dashboard')->with('success', 'Stato di visibilità del prodotto aggiornato con successo!');
     }
 
     /**
@@ -195,5 +170,6 @@ class ProductController extends Controller
             ->where('restaurant_id', Auth::user()->restaurant->id ?? null)
             ->firstOrFail();
     }
+
 }
 

@@ -17,12 +17,22 @@ class Product extends Model
         'visible',
         'restaurant_id',
     ];
-//creata relazione CON la tabella ristoranti perché più prodotti sono presenti in un singolo ristorante
-    public function restaurant(){
+
+    // Relazione con la tabella ristoranti
+    public function restaurant()
+    {
         return $this->belongsTo(Restaurant::class);
     }
-//creata relazione CON la tabella ordini con una PIVOT perché più prodotti possono essere ordinati in più ordini diversi
-    public function orders(){
-        return $this->belongsToMany(Order::class )->withPivot('quantity');
+
+    // Relazione con la tabella ordini con una pivot
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class)->withPivot('quantity');
+    }
+
+    // Aggiungi un accessor per ottenere l'URL completo dell'immagine
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 }

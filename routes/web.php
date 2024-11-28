@@ -7,6 +7,8 @@ use App\Http\Controllers\MainController;
 use App\Http\Controllers\Admin\MainController as AdminMainController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,13 +32,22 @@ Route::post('login', [AuthenticatedSessionController::class, 'store']); // Effet
 
 // Rotte protette per l'amministrazione
 Route::prefix('admin')
-    ->middleware(['auth'])
     ->name('admin.')
+    ->middleware('auth') // Protegge tutte le rotte sottostanti, solo gli utenti autenticati possono accedervi
     ->group(function () {
+
         // Dashboard amministrativa
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [RestaurantController::class, 'index'])->name('dashboard');
+
+        // Rotte per gestire i prodotti (solo CRUD dei prodotti)
+        Route::get('products/create', [ProductController::class, 'create'])->name('product.create');
+        Route::post('products', [ProductController::class, 'store'])->name('product.store');
+        Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
+        Route::put('products/{id}', [ProductController::class, 'update'])->name('product.update');
+        Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('product.destroy');
+        // Route per toggle della visibilità del prodotto
+        Route::put('/products/{id}/toggle-visibility', [ProductController::class, 'toggleVisibility'])->name('product.toggleVisibility');
+        Route::get('/products/{id}/show', [ProductController::class, 'show'])->name('product.show');
     });
 
 // Autenticazione (gestito automaticamente da Laravel)

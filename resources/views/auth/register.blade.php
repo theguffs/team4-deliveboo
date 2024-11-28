@@ -1,6 +1,13 @@
 @extends('layouts.guest')
 
 @section('main-content')
+<!--Se l'utente non è autenticato da errore-->
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+    
     <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
         @csrf
 
