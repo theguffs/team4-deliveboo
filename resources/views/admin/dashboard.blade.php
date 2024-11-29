@@ -41,7 +41,9 @@
                                     <tr>
                                         <td>{{ $product->name }}</td>
                                         <td>{{ $product->ingredients }}</td>
-                                        <td>{{ $product->price }}</td>
+                                        <td>{{ $product->price }}
+                                            <span>&#8364;</span>
+                                        </td>
                                         <td>
                                             <form action="{{ route('admin.product.toggleVisibility', $product->id) }}" method="POST">
                                                 @csrf

@@ -33,7 +33,9 @@
             </div>
 
             <div class="form-group mb-3">
-                <label for="price">Prezzo</label>
+                <label for="price">Prezzo
+                    <span>&#8364;</span>
+                </label>
                 <input type="number" step="0.01" name="price" id="price" class="form-control" value="{{ $product->price }}" required>
             </div>
 

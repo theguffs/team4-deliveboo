@@ -25,7 +25,9 @@
 
                         <!-- Prezzo del Prodotto -->
                         <div class="form-group mt-3">
-                            <label for="price">Prezzo</label>
+                            <label for="price">Prezzo
+                                <span>&#8364;</span>
+                            </label>
                             <input type="number" id="price" name="price" step="0.01" class="form-control" required>
                         </div>
 
