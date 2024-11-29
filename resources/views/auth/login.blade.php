@@ -41,7 +41,7 @@
                         </a>
                     @endif
         
-                    <button type="submit">
+                    <button type="submit" class="ms-4">
                         Log in
                     </button>
                 </div>

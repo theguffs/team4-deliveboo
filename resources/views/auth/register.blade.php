@@ -16,7 +16,7 @@
             <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data">
                 @csrf
         
-                <div class="d-flex justify-content-evenly">
+                <div class="d-flex">
                     <div>
                         <!-- Name -->
                         <div>
@@ -88,10 +88,12 @@
                         </div>
                     </div>
             
-                    <div>
+                    <div class="ms-5">
                         <!-- Restaurant Image -->
-                        <div class="mt-4">
-                            <label for="image">Immagine del Ristorante</label>
+                        <div class="ms-5">
+                            <div>
+                                <label for="image">Immagine del Ristorante:</label>
+                            </div>
                             <input id="image" type="file" name="image">
                             @error('image')
                                 <div>{{ $message }}</div>
@@ -99,14 +101,14 @@
                         </div>
                 
                         <!-- Categories as Checkboxes -->
-                        <div class="mt-4">
+                        <div class="mt-4 ms-5">
                             <label for="categories">Categorie del Ristorante</label>
                             <div id="categories">
                                 @foreach($categories as $category)
                                     <div>
                                         <input type="checkbox" id="category{{ $category->id }}" name="categories[]" value="{{ $category->id }}">
                                         <label for="category{{ $category->id }}">{{ $category->name }}</label>
-                                    </div>
+                                        </div>
                                 @endforeach
                             </div>
                             @error('categories')
@@ -121,7 +123,7 @@
                         {{ __('Already registered?') }}
                     </a>
         
-                    <button type="submit">
+                    <button type="submit" class="ms-4">
                         Register
                     </button>
                 </div>
