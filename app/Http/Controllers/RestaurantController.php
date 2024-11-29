@@ -78,7 +78,7 @@ class RestaurantController extends Controller
         'description' => $request->description,
         'piva' => $request->piva,
         // Gestione dell'immagine
-        'image' => $request->file('image') ? $request->file('image')->store('restaurants', 'public') : null, 
+        'image' => $image, 
     ]);
 
     
@@ -91,6 +91,7 @@ class RestaurantController extends Controller
     return response()->json([
         'message' => 'Ristorante creato con successo',
         'restaurant' => $restaurant->load('categories'),
+        'imageurl' => $image ? asset('storage/' . $image) : null
     ], 201);
 }
 
@@ -129,6 +130,7 @@ class RestaurantController extends Controller
         return response()->json([
             'message' => 'Ristorante aggiornato con successo',
             'restaurant' => $restaurant->load('categories'),
+            'imageurl' => $image ? asset('storage/' . $image) : null
         ]);
     }
 

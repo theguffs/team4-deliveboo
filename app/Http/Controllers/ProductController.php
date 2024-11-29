@@ -79,6 +79,7 @@ class ProductController extends Controller
 
         return redirect()->route('admin.dashboard')->with('success', 'Prodotto creato con successo!');
         return response()->json($product, 201);
+        
     }
 
     /**
@@ -134,8 +135,16 @@ class ProductController extends Controller
             'image' => $image,
         ]);
 
+        if($request -> ajax()) {
+            return response() -> json([
+                 'success'  => true,
+                 'data'  => $product,  
+                 'message'  => 'il prodotto è stato aggiornato con successo!',          
+            ]);
+        }
         // Reindirizza alla dashboard con un messaggio di successo
         return redirect()->route('admin.dashboard')->with('success', 'Prodotto aggiornato con successo!');
+        // return response()->json($product, 201);
     }
 
     /**
