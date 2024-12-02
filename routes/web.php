@@ -9,19 +9,25 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 
 /*
-|--------------------------------------------------------------------------
+|---------------------------------------------------------------------------
 | Web Routes
-|--------------------------------------------------------------------------
-|
+|---------------------------------------------------------------------------
 | Qui registriamo le rotte web per l'applicazione. Le rotte pubbliche
 | sono accessibili a tutti, mentre le rotte admin sono protette dal middleware.
-|
 */
 
 // Rotte pubbliche (visibili a tutti)
 Route::get('/', [MainController::class, 'index'])->name('home'); // Homepage dei ristoranti
+
+// Rotte pubbliche per gli ordini (per utenti non autenticati)
+Route::prefix('orders')
+    ->name('orders.')
+    ->group(function () {
+        Route::post('/', [OrderController::class, 'store'])->name('store'); // Creazione di un nuovo ordine
+    });
 
 // Rotte per la registrazione e il login
 Route::get('register', [RegisteredUserController::class, 'create'])->name('register'); // Vedi la vista di registrazione
@@ -48,6 +54,16 @@ Route::prefix('admin')
         // Route per toggle della visibilità del prodotto
         Route::put('/products/{id}/toggle-visibility', [ProductController::class, 'toggleVisibility'])->name('product.toggleVisibility');
         Route::get('/products/{id}/show', [ProductController::class, 'show'])->name('product.show');
+
+        // Rotte amministrative per la gestione degli ordini
+        Route::prefix('orders')
+            ->name('orders.')
+            ->group(function () {
+                Route::get('/', [OrderController::class, 'index'])->name('index'); // Elenco ordini
+                Route::get('/{id}', [OrderController::class, 'show'])->name('show'); // Dettagli di un ordine
+                Route::put('/{id}', [OrderController::class, 'update'])->name('update'); // Aggiorna lo stato dell'ordine
+                Route::delete('/{id}', [OrderController::class, 'destroy'])->name('destroy'); // Elimina un ordine
+            });
     });
 
 // Autenticazione (gestito automaticamente da Laravel)
