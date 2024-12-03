@@ -27,7 +27,9 @@ Passaggio Numero 1
    Order relazione Molti a Molti con Product           
 
 
+aggiunta dati da inviare lato Back-End nel dashboardController
 
+creata vista blade di charts.js
 
 
 
