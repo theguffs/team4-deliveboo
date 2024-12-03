@@ -27,7 +27,7 @@ Route::prefix('public')->group(function () {
 
     // Visualizzare i piatti di un ristorante
     Route::get('restaurant/{restaurant}/products', [ProductController::class, 'index'])->name('products.index'); // Vedi i prodotti di un ristorante
-    
+    Route::post('order', [OrderController::class, 'store'])->name('order.store');
 });
 
 /* Rotte di autenticazione (per utenti non autenticati) */
@@ -51,6 +51,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Visualizzare e gestire ordini
         Route::get('orders', [OrderController::class, 'index'])->name('restaurant.orders.index'); // Vedi tutti gli ordini
         Route::get('orders/{order}', [OrderController::class, 'show'])->name('restaurant.orders.show'); // Vedi un ordine specifico
+        Route::post('order', [OrderController::class, 'store'])->name('order.store');
+
     });
 });
 

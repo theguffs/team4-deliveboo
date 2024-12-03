@@ -32,42 +32,32 @@ class OrderController extends Controller
      * Gestisce sia gli utenti autenticati che non autenticati.
      */
     public function store(Request $request)
-    {
-        // Valida i dati in arrivo
-        $validatedData = $request->validate([
-            'restaurant_id' => 'required|exists:restaurants,id',
-            'products' => 'required|array',
-            'products.*.id' => 'required|exists:products,id',
-            'products.*.quantity' => 'required|integer|min:1',
-            'total' => 'required|numeric|min:0',
-            'email' => 'required|email|max:100',
-            'telefono' => 'required|string|max:15',
-            'indirizzo' => 'required|string|max:100',
-            'note' => 'nullable|string|max:500',
-            'cliente' => 'required|string|max:100',
-        ]);
+{
+    // Valida i dati in arrivo
+    $validatedData = $request->validate([
+        'email' => 'required|email|max:100',
+        'phone' => 'required|string|max:15',
+        'address' => 'required|string|max:255',
+        'notes' => 'nullable|string|max:500',
+        'price' => 'required|numeric|min:0',
+        'customer' => 'required|string|max:100',
+    ]);
 
-        // Crea un nuovo ordine
-        $order = new Order();
-        $order->restaurant_id = $validatedData['restaurant_id'];
-        $order->email = $validatedData['email'];
-        $order->telefono = $validatedData['telefono'];
-        $order->indirizzo = $validatedData['indirizzo'];
-        $order->note = $validatedData['note'] ?? null;
-        $order->prezzo = $validatedData['total'];
-        $order->cliente = $validatedData['cliente'];
-        $order->save();
+    // Crea un nuovo ordine
+    $order = new Order();
+    $order->email = $validatedData['email'];
+    $order->phone = $validatedData['phone'];
+    $order->address = $validatedData['address'];
+    $order->notes = $validatedData['notes'] ?? null;
+    $order->price = $validatedData['price'];
+    $order->customer = $validatedData['customer'];
+    $order->save();
 
-        // Associa i prodotti all'ordine con le relative quantità
-        foreach ($validatedData['products'] as $product) {
-            $order->products()->attach($product['id'], ['quantity' => $product['quantity']]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'order' => $order->load('products'),
-        ]);
-    }
+    return response()->json([
+        'success' => true,
+        'order' => $order,
+    ]);
+}
 
     /**
      * Mostra i dettagli di un ordine specifico.
