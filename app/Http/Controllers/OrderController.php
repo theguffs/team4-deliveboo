@@ -41,6 +41,7 @@ class OrderController extends Controller
         'notes' => 'nullable|string|max:500',
         'price' => 'required|numeric|min:0',
         'customer' => 'required|string|max:100',
+        'restaurant_id' => 'required|integer|exists:restaurants,id'
     ]);
 
     // Crea un nuovo ordine
@@ -51,6 +52,7 @@ class OrderController extends Controller
     $order->notes = $validatedData['notes'] ?? null;
     $order->price = $validatedData['price'];
     $order->customer = $validatedData['customer'];
+    $order->restaurantId = $validatedData['restaurant_id'];
     $order->save();
 
     return response()->json([

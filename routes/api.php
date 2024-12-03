@@ -27,7 +27,6 @@ Route::prefix('public')->group(function () {
 
     // Visualizzare i piatti di un ristorante
     Route::get('restaurant/{restaurant}/products', [ProductController::class, 'index'])->name('products.index'); // Vedi i prodotti di un ristorante
-    Route::post('order', [OrderController::class, 'store'])->name('order.store');
 });
 
 /* Rotte di autenticazione (per utenti non autenticati) */
@@ -35,6 +34,9 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store'])->name('auth.register'); // Registrazione dell'utente e creazione ristorante
     // Aggiungi altre rotte di autenticazione se necessarie (login, password reset, ecc.)
 });
+
+/* Rotte per utenti non autenticati (clienti che vogliono ordinare) */
+Route::post('order', [OrderController::class, 'store'])->name('order.store'); // Creare un ordine (per clienti non autenticati)
 
 /* Rotte per utenti autenticati (ristoratori) */
 Route::middleware('auth:sanctum')->group(function () {
@@ -48,13 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rotte per gestire i piatti (CRUD dei piatti del ristorante)
         Route::resource('products', ProductController::class)->except(['index', 'show']); // Le operazioni CRUD riservate ai ristoratori
 
-        // Visualizzare e gestire ordini
+        // Visualizzare e gestire ordini (solo ristoratori)
         Route::get('orders', [OrderController::class, 'index'])->name('restaurant.orders.index'); // Vedi tutti gli ordini
         Route::get('orders/{order}', [OrderController::class, 'show'])->name('restaurant.orders.show'); // Vedi un ordine specifico
-        Route::post('order', [OrderController::class, 'store'])->name('order.store');
-
+        Route::put('orders/{order}', [OrderController::class, 'update'])->name('restaurant.orders.update'); // Modifica lo stato dell'ordine
     });
 });
-
-/* Rotte per gli utenti non autenticati (clienti che vogliono ordinare) */
-Route::post('order', [OrderController::class, 'store'])->name('order.store'); // Creare un ordine
