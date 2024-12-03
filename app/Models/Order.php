@@ -16,11 +16,14 @@ class Order extends Model
         'price',
         'customer',
         'notes',
+        'restaurant_id'
     ];
 //creata relazione CON la tabella prodotti con una PIVOT perché più prodotti possono essere ordinati in più ordini diversi
     public function products(){
         return $this->belongsToMany(Product::class)->withPivot('quantity');
     }
     
-
+    public function restaurant(){
+        return $this->belongsTo(Restaurant::class);
+    }
 }

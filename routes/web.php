@@ -64,6 +64,7 @@ Route::prefix('admin')
                 Route::put('/{id}', [OrderController::class, 'update'])->name('update'); // Aggiorna lo stato dell'ordine
                 Route::delete('/{id}', [OrderController::class, 'destroy'])->name('destroy'); // Elimina un ordine
             });
+        Route::get('/restaurant/{restaurantId}/orders', [RestaurantController::class, 'getOrders']);
     });
 
 // Autenticazione (gestito automaticamente da Laravel)

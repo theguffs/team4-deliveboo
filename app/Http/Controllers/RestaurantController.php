@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\Category;
+use App\Models\Order;  // Aggiungi il modello Order
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class RestaurantController extends Controller
 {
-    public function getCategories(){$categories=Category::all();
+    public function getCategories()
+    {
+        $categories = Category::all();
         return response()->json($categories);
     }
+
     // Mostra i ristoranti
     public function index(Request $request)
     {
@@ -50,51 +53,49 @@ class RestaurantController extends Controller
 
     // Crea un ristorante (solo per utenti autenticati)
     public function store(Request $request)
-{
-    // Verifica se l'utente ha già un ristorante
-    if (Auth::user()->restaurant) {
-        return response()->json(['message' => 'Hai già un ristorante. Non puoi crearne più di uno.'], 400);
+    {
+        // Verifica se l'utente ha già un ristorante
+        if (Auth::user()->restaurant) {
+            return response()->json(['message' => 'Hai già un ristorante. Non puoi crearne più di uno.'], 400);
+        }
+
+        $this->authorize('create', Restaurant::class);
+
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'address' => 'required|string|max:100',
+            'description' => 'nullable|string',
+            'piva' => 'required|string|size:11|unique:restaurants',
+            'image' => 'nullable|image',
+            'categories' => 'required|array',
+            'categories.*' => 'exists:categories,id'
+        ]);
+
+        // Gestione immagine
+        $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
+
+        // Crea il ristorante e associa i dati
+        $restaurant = Auth::user()->restaurant()->create([
+            'name' => $request->name,
+            'address' => $request->address,
+            'description' => $request->description,
+            'piva' => $request->piva,
+            // Gestione dell'immagine
+            'image' => $image, 
+        ]);
+
+        // Associa le categorie al ristorante
+        if ($request->has('categories')) {
+            $restaurant->categories()->attach($request->categories);
+        }
+
+        // Risposta di successo
+        return response()->json([
+            'message' => 'Ristorante creato con successo',
+            'restaurant' => $restaurant->load('categories'),
+            'imageurl' => $image ? asset('storage/' . $image) : null
+        ], 201);
     }
-
-    $this->authorize('create', Restaurant::class);
-
-    $request->validate([
-        'name' => 'required|string|max:100',
-        'address' => 'required|string|max:100',
-        'description' => 'nullable|string',
-        'piva' => 'required|string|size:11|unique:restaurants',
-        'image' => 'nullable|image',
-        'categories' => 'required|array',
-        'categories.*' => 'exists:categories,id'
-    ]);
-
-    // Gestione immagine
-    $image = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
-
-    // Crea il ristorante e associa i dati
-    $restaurant = Auth::user()->restaurant()->create([
-        'name' => $request->name,
-        'address' => $request->address,
-        'description' => $request->description,
-        'piva' => $request->piva,
-        // Gestione dell'immagine
-        'image' => $image, 
-    ]);
-
-    
-    // Associa le categorie al ristorante
-    if ($request->has('categories')) {
-        $restaurant->categories()->attach($request->categories);
-    }
-
-    // Risposta di successo
-    return response()->json([
-        'message' => 'Ristorante creato con successo',
-        'restaurant' => $restaurant->load('categories'),
-        'imageurl' => $image ? asset('storage/' . $image) : null
-    ], 201);
-}
-
 
     // Modifica un ristorante (solo per utenti autenticati)
     public function update(Request $request, string $id)
@@ -141,5 +142,15 @@ class RestaurantController extends Controller
         $restaurant->delete();
 
         return response()->json(['message' => 'Ristorante eliminato con successo']);
+    }
+
+    // Recupera gli ordini di un ristorante specifico
+    public function getOrders(string $restaurantId)
+    {
+        // Recupera il ristorante e i suoi ordini associati
+        $restaurant = Restaurant::where('id', $restaurantId)->with('orders')->firstOrFail();
+
+        // Restituisce i dati degli ordini in formato JSON
+        return response()->json($restaurant->orders);
     }
 }
