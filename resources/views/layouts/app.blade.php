@@ -10,6 +10,9 @@
 
         <!-- Scripts -->
         @vite('resources/js/app.js')
+
+        <!--link di charts.js-->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body>
         <header>
