@@ -20,8 +20,8 @@
                 <div>
                     <!-- Name -->
                     <div>
-                        <label for="name">Nome</label>
-                        <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus maxlength="255">
+                        <label for="user_name">Nome</label>
+                        <input id="user_name" type="text" name="user_name" value="{{ old('user_name') }}" required autofocus maxlength="255">
                         @error('name')
                             <div>{{ $message }}</div>
                         @enderror
@@ -53,8 +53,8 @@
             
                     <!-- Restaurant Name -->
                     <div class="mt-4">
-                        <label for="restaurant_name">Nome Ristorante</label>
-                        <input id="restaurant_name" type="text" name="restaurant_name" value="{{ old('restaurant_name') }}" required maxlength="100">
+                        <label for="name">Nome Ristorante</label>
+                        <input id="name" type="text" name="name" value="{{ old('name') }}" required maxlength="100">
                         @error('restaurant_name')
                             <div>{{ $message }}</div>
                         @enderror

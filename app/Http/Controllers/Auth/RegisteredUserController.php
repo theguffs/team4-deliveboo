@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
         // Validazione dei dati (utente e ristorante)
         $request->validate([
             // Dati utente
-            'name' => 'required|string|max:255',
+            'user_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             // Dati ristorante
@@ -38,7 +38,7 @@ class RegisteredUserController extends Controller
 
         // Crea l'utente
         $user = User::create([
-            'name' => $request->name,
+            'user_name' => $request->user_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

@@ -7,7 +7,7 @@
     <div class="col">
         <div class="card">
             <div class="card-body">
-                <h1 class="text-center text-success">Bentornat* {{ $restaurant->user->name }}
+                <h1 class="text-center text-success">Bentornat* {{ $restaurant->user->user_name }}
 
                 <!-- Messaggio di successo -->
                 @if(session('success'))
