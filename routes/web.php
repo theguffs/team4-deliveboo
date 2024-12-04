@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
-use App\Http\Controllers\Admin\MainController as AdminMainController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\RestaurantController;
@@ -47,6 +46,8 @@ Route::prefix('admin')
 
         // Ordini per ristorante
         Route::get('/restaurants/{restaurantId}/orders', [OrderController::class, 'indexByRestaurant'])->name('orders.restaurant');
+        Route::get('admin/orders/stats/{restaurantId}', [OrderController::class, 'showOrderStats'])->name('order_stats');
+
 
         // Gestione degli ordini
         Route::prefix('orders')

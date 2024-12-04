@@ -69,66 +69,10 @@
 
                 <!-- Sezione Statistiche -->
                 <h3>Statistiche degli Ordini</h3>
-               @if(isset($ordersStats) && !$ordersStats->isEmpty())
-                    <p class="text-center">Non ci sono ancora ordini registrati.</p>
-                @else
-                    <canvas id="ordersChart"></canvas>
-                @endif
-                <script>
-                    @php
-                        $ordersStats = $ordersStats ?? collect([]); // Inizializza come collezione vuota se non definita
-                    @endphp
-                    // Recupera i dati degli ordini passati dal controller
-                    const ordersStats = @json($ordersStats);
+                <a href="{{ route('admin.order_stats', $restaurant->id) }}" class="btn btn-info btn-lg btn-block">
+                    Statistiche Ordini
+                </a>
 
-                    // Estrai i dati per il grafico
-                    const months = ordersStats.map(stat => `${stat.month}-${stat.year}`);
-                    const orderCounts = ordersStats.map(stat => stat.total_orders);
-                    const salesAmounts = ordersStats.map(stat => stat.total_sales);
-
-                    // Crea il grafico degli ordini
-                    const ctxOrders = document.getElementById('ordersChart').getContext('2d');
-                    new Chart(ctxOrders, {
-                        type: 'bar',
-                        data: {
-                            labels: months,
-                            datasets: [
-                                {
-                                    label: 'Numero di Ordini',
-                                    data: orderCounts,
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1
-                                },
-                                {
-                                    label: 'Ammontare delle Vendite (€)',
-                                    data: salesAmounts,
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
-                                    borderWidth: 1
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Mese-Anno'
-                                    }
-                                },
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: 'Quantità'
-                                    },
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                </script>
             </div>
         </div>
     </div>

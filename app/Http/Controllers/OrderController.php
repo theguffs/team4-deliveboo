@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -36,6 +37,20 @@ class OrderController extends Controller
             ->get();
 
         return view('orders.index', compact('orders'));
+    }
+    // Metodo per le statistiche degli ordini
+    public function showOrderStats($restaurantId)
+    {
+        $restaurant = Restaurant::findOrFail($restaurantId);
+
+        $ordersStats = Order::selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as total_orders, SUM(price) as total_sales')
+            ->where('restaurant_id', $restaurantId)
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
+        return view('orders.stats', compact('restaurant', 'ordersStats'));
     }
 
     /**
