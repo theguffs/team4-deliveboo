@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -41,7 +42,11 @@ class OrderController extends Controller
         'notes' => 'nullable|string|max:500',
         'price' => 'required|numeric|min:0',
         'customer' => 'required|string|max:100',
-        'restaurant_id' => 'required|integer|exists:restaurants,id'
+        'restaurant_id' => 'required|integer|exists:restaurants,id',
+        'products' => 'required|array', // Aggiungi questa validazione per i prodotti
+        'products.*.id' => 'required|integer|exists:products,id', // Ogni prodotto deve avere un id valido
+        'products.*.quantity' => 'required|integer|min:1', // Quantità del prodotto
+        'products.*.price' => 'required|numeric|min:0', // Prezzo del prodotto
     ]);
 
     // Crea un nuovo ordine
@@ -52,8 +57,16 @@ class OrderController extends Controller
     $order->notes = $validatedData['notes'] ?? null;
     $order->price = $validatedData['price'];
     $order->customer = $validatedData['customer'];
-    $order->restaurantId = $validatedData['restaurant_id'];
+    $order->restaurant_id = $validatedData['restaurant_id'];
     $order->save();
+
+     // Associa i prodotti all'ordine
+     foreach ($validatedData['products'] as $product) {
+        $order->products()->attach($product['id'], [
+            'quantity' => $product['quantity'],
+            'price' => $product['price'],
+        ]);
+    }
 
     return response()->json([
         'success' => true,

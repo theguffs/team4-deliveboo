@@ -27,7 +27,7 @@ class Product extends Model
     // Relazione con la tabella ordini con una pivot
     public function orders()
     {
-        return $this->belongsToMany(Order::class)->withPivot('quantity');
+        return $this->belongsToMany(Order::class, 'order_product')->withPivot('quantity', 'price');
     }
 
     // Aggiungi un accessor per ottenere l'URL completo dell'immagine
