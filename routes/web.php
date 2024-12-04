@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-// Controllers
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\Admin\MainController as AdminMainController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -10,14 +8,6 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
-
-/*
-|---------------------------------------------------------------------------
-| Web Routes
-|---------------------------------------------------------------------------
-| Qui registriamo le rotte web per l'applicazione. Le rotte pubbliche
-| sono accessibili a tutti, mentre le rotte admin sono protette dal middleware.
-*/
 
 // Rotte pubbliche (visibili a tutti)
 Route::get('/', [MainController::class, 'index'])->name('home'); // Homepage dei ristoranti
@@ -27,6 +17,7 @@ Route::prefix('orders')
     ->name('orders.')
     ->group(function () {
         Route::post('/', [OrderController::class, 'store'])->name('store'); // Creazione di un nuovo ordine
+        Route::get('/', [OrderController::class, 'index'])->name('index'); // Recupero degli ordini tramite query string
     });
 
 // Rotte per la registrazione e il login
@@ -45,17 +36,19 @@ Route::prefix('admin')
         // Dashboard amministrativa
         Route::get('/dashboard', [RestaurantController::class, 'index'])->name('dashboard');
 
-        // Rotte per gestire i prodotti (solo CRUD dei prodotti)
+        // Gestione dei prodotti
         Route::get('products/create', [ProductController::class, 'create'])->name('product.create');
         Route::post('products', [ProductController::class, 'store'])->name('product.store');
         Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('product.edit');
         Route::put('products/{id}', [ProductController::class, 'update'])->name('product.update');
         Route::delete('products/{id}', [ProductController::class, 'destroy'])->name('product.destroy');
-        // Route per toggle della visibilità del prodotto
         Route::put('/products/{id}/toggle-visibility', [ProductController::class, 'toggleVisibility'])->name('product.toggleVisibility');
         Route::get('/products/{id}/show', [ProductController::class, 'show'])->name('product.show');
 
-        // Rotte amministrative per la gestione degli ordini
+        // Ordini per ristorante
+        Route::get('/restaurants/{restaurantId}/orders', [OrderController::class, 'indexByRestaurant'])->name('orders.restaurant');
+
+        // Gestione degli ordini
         Route::prefix('orders')
             ->name('orders.')
             ->group(function () {
@@ -64,8 +57,8 @@ Route::prefix('admin')
                 Route::put('/{id}', [OrderController::class, 'update'])->name('update'); // Aggiorna lo stato dell'ordine
                 Route::delete('/{id}', [OrderController::class, 'destroy'])->name('destroy'); // Elimina un ordine
             });
-        Route::get('/restaurant/{restaurantId}/orders', [RestaurantController::class, 'getOrders']);
     });
 
-// Autenticazione (gestito automaticamente da Laravel)
+// Autenticazione
 require __DIR__.'/auth.php'; // Include il file che gestisce le rotte di autenticazione come il logout
+

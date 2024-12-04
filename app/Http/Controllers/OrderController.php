@@ -28,6 +28,16 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
+        public function indexByRestaurant($restaurantId)
+    {
+        $orders = Order::with('products')
+            ->where('restaurant_id', $restaurantId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('orders.index', compact('orders'));
+    }
+
     /**
      * Crea un nuovo ordine.
      * Gestisce sia gli utenti autenticati che non autenticati.

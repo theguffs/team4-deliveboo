@@ -64,6 +64,9 @@
                         </tbody>
                     </table>
                 @endif
+                <!--sezione ordini risotrante-->
+                <a href="{{ route('admin.orders.restaurant', ['restaurantId' => $restaurant->id]) }}" class="btn btn-primary">Visualizza Ordini</a>
+
                 <!-- Sezione Statistiche -->
                 <h3>Statistiche degli Ordini</h3>
                @if(isset($ordersStats) && !$ordersStats->isEmpty())

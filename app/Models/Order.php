@@ -20,7 +20,7 @@ class Order extends Model
     ];
 //creata relazione CON la tabella prodotti con una PIVOT perché più prodotti possono essere ordinati in più ordini diversi
     public function products(){
-        return $this->belongsToMany(Product::class, 'order_product')->withPivot('quantity', 'price');
+        return $this->belongsToMany(Product::class, 'order_product')->withPivot('quantity', 'price')->withTimestamps();
     }
     
     public function restaurant(){

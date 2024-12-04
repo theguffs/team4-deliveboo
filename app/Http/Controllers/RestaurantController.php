@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\Category;
-use App\Models\Order;  // Aggiungi il modello Order
+use App\Models\Order;  
 use Illuminate\Support\Facades\Auth;
 
 class RestaurantController extends Controller
