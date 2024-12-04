@@ -29,7 +29,18 @@ Passaggio Numero 1
 
 aggiunta dati da inviare lato Back-End nel dashboardController
 
-creata vista blade di charts.js
+
+
+Passaggio RF 5-6
+creata vista blade per il riepilogo ordini in orders/index.blade.php
+creata vista blade di charts.js in orders/stats.blade.php
+
+aggiornato OrderController con funzione per prendere le stats
+aggiornate le rotte in web.php per aggiungere le due viste di orders
+
+
+
+
 
 
 
