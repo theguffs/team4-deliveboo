@@ -38,6 +38,8 @@ creata vista blade di charts.js in orders/stats.blade.php
 aggiornato OrderController con funzione per prendere le stats
 aggiornate le rotte in web.php per aggiungere le due viste di orders
 
+aggiornato user -> 'name' in 'user_name' nel RegisterNameController-model-dashboard e eseguita migration della tabella users 
+
 
 
 
